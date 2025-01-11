@@ -1,0 +1,68 @@
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    container_name: postgres_db
+    networks:
+      - mynetwork
+
+  redis:
+    image: redis:7.0.11
+    networks:
+      - mynetwork
+
+  app:
+    build: .
+    volumes: 
+      - .:/django
+    ports:
+      - 8000:8000
+    image: app:django
+    container_name: django_container2
+    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - db
+      - redis
+    networks:
+      - mynetwork
+
+  celery:
+    build: .
+    command: celery --app=core worker -l INFO -Q celery,celery:1,celery:2,celery:3
+    #notiice the lack of spaces between the celery queues
+    volumes: 
+      - .:/django
+    container_name: celery
+    depends_on:
+      - redis
+      - db
+      - app
+    networks:
+      - mynetwork
+  
+  # celery2:
+  #   build: 
+  #     context: ./celeryworker
+  #     dockerfile: Dockerfile
+  #   command: celery -A celerytask worker -l INFO -Q queue2
+  #   volumes: 
+  #     - ./celeryworker:/django 
+  #   container_name: celery2
+  #   depends_on:
+  #     - app
+  #     - redis
+  #     - db
+  #   networks:
+  #     - mynetwork
+  
+
+
+networks:
+  mynetwork:
+    driver: bridge

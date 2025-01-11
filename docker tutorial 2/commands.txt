@@ -1,0 +1,29 @@
+# Part 1
+docker build --tag python-django .
+docker run --publish 8000:8000 python-django
+
+# Part 2 
+docker-compose build
+docker-compose run --rm app django-admin startproject core .
+docker-compose up
+
+# Part 3
+docker-compose build 
+docker-compose run --rm app django-admin startproject core .
+docker-compose 
+docker-compose up -d --build
+docker exec -it django_container2 /bin/bash
+tp1.delay()
+
+for task grouping:
+from celery import group
+from newapp.tasks import tp1, tp2, tp3, tp4
+task_group= group(tp1.s(), tp2.s(), tp3.s(), tp4.s())
+task_group.apply_async()
+
+for task chaining:
+from celery import chain
+from newapp.tasks import tp1, tp2, tp3, tp4
+task_chain=chain(tp1.s(), tp2.s(), tp3.s())
+task_chain.apply_async()
+
